@@ -16,6 +16,9 @@ HEROImage.src = '/static/hero.png';
 const ENTITYImage = new Image();
 ENTITYImage.src = '/static/entity.png';
 
+const BAD_ENTITYImage = new Image();
+BAD_ENTITYImage.src = '/static/bad-entity.png';
+
 let IS_START = true;
 
 const SPEED = 2;
@@ -46,6 +49,11 @@ function randomEntityY() {
   return randomIntFromInterval(0, WORLD_HEIGHT - ENTITY_SIZE);
 }
 
+function randomBadEntity() {
+  const random = randomIntFromInterval(0, 10);
+  return random === 3;
+}
+
 let ENTITIES = [];
 
 function createEntity({
@@ -59,6 +67,7 @@ function createEntity({
     y,
     width,
     height,
+    isBad: randomBadEntity(),
   });
 }
 
@@ -78,7 +87,7 @@ function drawAndMoveEntities() {
   ENTITIES = [...ENTITIES]
     .map((entity) => {
       ctx.drawImage(
-        ENTITYImage,
+        entity.isBad ? BAD_ENTITYImage : ENTITYImage,
         entity.x,
         entity.y,
         entity.width,
@@ -91,7 +100,12 @@ function drawAndMoveEntities() {
       const isCollect = checkCollisionWithHero(entity);
 
       if (isCollect) {
-        increaseScore();
+        if (entity.isBad) {
+          decreaseScore();
+        } else {
+          increaseScore();
+        }
+
         return false;
       }
 
@@ -101,6 +115,17 @@ function drawAndMoveEntities() {
 
 function increaseScore() {
   SCORE += 1;
+
+  if (SCORE > highScore) {
+    localStorage.setItem('highScore', SCORE);
+    highScoreSpan.textContent = SCORE;
+  }
+
+  scoreSpan.textContent = SCORE;
+}
+
+function decreaseScore() {
+  SCORE -= 3;
 
   if (SCORE > highScore) {
     localStorage.setItem('highScore', SCORE);
