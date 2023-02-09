@@ -21,24 +21,27 @@ BAD_ENTITYImage.src = '/static/bad-entity.png';
 
 let IS_START = true;
 
-const SPEED = 2;
+const SPEED = 1;
 
 const WORLD_WIDTH = 300;
 const WORLD_HEIGHT = 350;
 ctx.canvas.width = WORLD_WIDTH;
 ctx.canvas.height = WORLD_HEIGHT;
 
-const HERO_SIZE = 50;
+const GAP_VERTICAL = WORLD_HEIGHT / 10;
+
+const HERO_SIZE = 30;
 let HERO_POS_X = 25;
 let HERO_POS_Y = (WORLD_HEIGHT - HERO_SIZE) / 2;
 
-const ENTITY_SIZE = 50;
+const ENTITY_SIZE = 20;
 
 const BOTTOM_BORDER = WORLD_HEIGHT - HERO_SIZE;
 const TOP_BORDER = 0;
 
-let JUMP_POWER = 17;
-const BASE_GRAVITY = 3;
+let JUMP_POWER = 10;
+const BASE_GRAVITY = 1.5;
+const MIN_GRAVITY = BASE_GRAVITY - JUMP_POWER;
 let GRAVITY = BASE_GRAVITY;
 
 function randomIntFromInterval(min, max) {
@@ -46,7 +49,10 @@ function randomIntFromInterval(min, max) {
 }
 
 function randomEntityY() {
-  return randomIntFromInterval(0, WORLD_HEIGHT - ENTITY_SIZE);
+  return randomIntFromInterval(
+    0 + GAP_VERTICAL,
+    WORLD_HEIGHT - ENTITY_SIZE - GAP_VERTICAL
+  );
 }
 
 function randomBadEntity() {
@@ -72,7 +78,7 @@ function createEntity({
 }
 
 function frame() {
-  if (GRAVITY < BASE_GRAVITY) GRAVITY++;
+  if (GRAVITY < BASE_GRAVITY) GRAVITY += 0.5;
   HERO_POS_Y += GRAVITY;
 
   checkWorldCollision();
@@ -168,13 +174,14 @@ function checkWorldCollision() {
 
   if (HERO_POS_Y < TOP_BORDER) {
     HERO_POS_Y = TOP_BORDER;
+    GRAVITY = BASE_GRAVITY;
   }
 }
 
 function jump() {
   !IS_START && location.reload();
 
-  GRAVITY -= JUMP_POWER;
+  GRAVITY = MIN_GRAVITY;
 }
 
 function main() {
@@ -191,6 +198,10 @@ function main() {
   document.addEventListener('keydown', (e) => {
     if (e.code === 'KeyF') createEntity({ y: randomEntityY() });
   });
+
+  setInterval(() => {
+    createEntity({ y: randomEntityY() });
+  }, 250);
 }
 
 main();
